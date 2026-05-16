@@ -1,28 +1,41 @@
 import re
 
 def format_numbered_steps(value):
-    def clean_step(step):
-        step = str(step).strip()
+    import re
+
+    if not value:
+        return ""
+
+    if isinstance(value, list):
+        steps = value
+    else:
+        steps = re.split(r'\s*(?=\d+\.\s*)', str(value))
+
+    cleaned = []
+
+    for step in steps:
+        step = re.sub(r'^\d+\.\s*', '', str(step).strip())
 
         while step and step[0] in ['"', "'"] and step[-1] in ['"', "'"]:
             step = step[1:-1].strip()
 
-        return step
+        step = step.replace('"', '').replace("'", "")
 
-    if isinstance(value, list):
-        steps = value
-    elif isinstance(value, str):
-        steps = re.split(r'\s*(?=\d+\.\s*)', value)
-    else:
-        steps = []
+        if step:
+            cleaned.append(step)
 
-    formatted = "\n".join(
-        f'{i}. "{clean_step(step)}"'
-        for i, step in enumerate(steps, start=1)
-        if str(step).strip()
+    return "\n".join(
+        f'{i}. "{step}"'
+        for i, step in enumerate(cleaned, start=1)
     )
 
-    # Safety: force newline before 2., 3., 4., etc.
-    formatted = re.sub(r'(?<!^)(\d+\.\s")', r'\n\1', formatted)
+def align_steps(actions, results):
+    max_len = max(len(actions), len(results))
 
-    return formatted
+    while len(results) < max_len:
+        results.append("Expected result is verified.")
+
+    while len(actions) < max_len:
+        actions.append("Verify the expected result.")
+
+    return actions, results

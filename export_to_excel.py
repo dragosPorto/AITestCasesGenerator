@@ -1,4 +1,4 @@
-from helpers import format_numbered_steps
+from helpers import align_steps, format_numbered_steps
 import csv
 
 
@@ -8,6 +8,10 @@ def export_to_excel(test_cases):
     rows = []
 
     for test_case in test_cases:
+        actions, results = align_steps(
+            test_case.test_steps,
+            test_case.expected_result
+        )
         rows.append({
             "v2.id": test_case.test_case_id,
             "title": test_case.test_title,
@@ -26,8 +30,8 @@ def export_to_excel(test_cases):
             "layer": test_case.layer,
 
             "steps_type": test_case.steps_type,
-            "steps_actions": format_numbered_steps(test_case.test_steps),
-            "steps_result": format_numbered_steps(test_case.expected_result),
+            "steps_actions": format_numbered_steps(actions),
+            "steps_result": format_numbered_steps(results),
             "steps_data": test_case.steps_data,
 
             "suite": test_case.suite_id,

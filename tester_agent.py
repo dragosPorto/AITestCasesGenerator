@@ -69,6 +69,9 @@ Rules:
 - is_muted should be "No".
 - severity must be an integer from 1 to 5.
 - priority must be an integer from 1 to 5.
+- test_steps and expected_result must have the same number of items.
+- Each test_steps item must have one matching expected_result item at the same index.
+- Do not group multiple expected results into fewer lines.
 """
 
     result = structured_llm.invoke(prompt)
