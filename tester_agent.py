@@ -3,9 +3,12 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph
 from pydantic import BaseModel
+from groq import BadRequestError
 
 load_dotenv()
 
+class TestCaseGenerationError(Exception):
+    pass
 
 class TestCase(BaseModel):
     test_case_id: str = ""
@@ -74,9 +77,30 @@ Rules:
 - Do not group multiple expected results into fewer lines.
 """
 
-    result = structured_llm.invoke(prompt)
+    try:
+        result = structured_llm.invoke(prompt)
 
-    return {"test_cases": result.test_cases}
+        return {
+            "test_cases": result.test_cases
+        }
+
+    except BadRequestError as e:
+        error_text = str(e)
+
+        if "Failed to parse tool call arguments as JSON" in error_text:
+            raise TestCaseGenerationError(
+                "Too many test cases were generated and the AI response became too large. "
+                "Try simplifying the user story."
+            )
+
+        raise TestCaseGenerationError(
+            f"AI generation failed: {error_text}"
+        )
+
+    except Exception as e:
+        raise TestCaseGenerationError(
+            f"Unexpected error: {str(e)}"
+        )
 
 
 graph_builder = StateGraph(State)
