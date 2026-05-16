@@ -34,7 +34,8 @@ def export_to_excel(test_cases):
             "steps_result": format_numbered_steps(results),
             "steps_data": test_case.steps_data,
 
-            "suite": test_case.suite_id,
+            "suite": test_case.suite,
+            "suite_id": test_case.suite_id,
             "suite_without_cases": test_case.suite_without_cases_id,
             "is_muted": test_case.is_muted,
         })
@@ -46,7 +47,7 @@ def export_to_excel(test_cases):
         "tags", "priority", "severity", "type", "behavior", "automation",
         "status", "is_flaky", "layer",
         "steps_type", "steps_actions", "steps_result", "steps_data",
-        "suite", "suite_without_cases", "is_muted"
+        "suite", "suite_id", "suite_without_cases", "is_muted"
     ]
 
     df = df.reindex(columns=expected_columns)

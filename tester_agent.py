@@ -22,16 +22,17 @@ class TestCase(BaseModel):
     automation: str = "is-not-automated"
     status: str = "actual"
     is_flaky: str = "No"
-    layer: str = "unknown"
+    layer: str = ""
     steps_type: str = "classic"
     test_steps: List[str]
     steps_data: str = ""
     expected_result: List[str]
     comments: str = ""
-    severity: int = 3
-    priority: int = 3
-    suite_id: str = ""
-    suite_without_cases_id: str = "1"
+    severity: str = "Normal"
+    priority: str = "Medium"
+    suite: str = "default suite"
+    suite_id: int
+    suite_without_cases_id: str
     is_muted: str = "No"
 
 
@@ -64,14 +65,19 @@ Rules:
 - Return test cases using the required schema.
 - Do not generate test_case_id. Leave it empty.
 - behavior must be exactly one of: Positive, Negative, Destructive.
-- type should be "other".
+- layer should be one of: E2E, API, Unit.
+- type should be one of: functional, smoke, performance, security, usability, compatibility, regression, acceptance, integration, exploratory, other.
 - automation should be "is-not-automated".
-- status should be "actual".
-- steps_type should be "classic".
-- is_flaky should be "No".
-- is_muted should be "No".
-- severity must be an integer from 1 to 5.
-- priority must be an integer from 1 to 5.
+- status should always be "actual".
+- steps_type should always be "classic".
+- is_flaky should always be "No".
+- is_muted should always be "No".
+- severity must always be "Normal".
+- priority must always be "Medium".
+- suite_without_cases should be empty.
+- suite should be the name of the test suite.
+- suite represents the functionality or module the test case belongs to. If the user story doesn't specify it, use "default suite".
+- suite_id should be a unique integer for each suite. If the user story doesn't specify it, use 0 for "default suite".
 - test_steps and expected_result must have the same number of items.
 - Each test_steps item must have one matching expected_result item at the same index.
 - Do not group multiple expected results into fewer lines.

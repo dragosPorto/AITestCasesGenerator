@@ -1,14 +1,32 @@
-v2.id,title,description,preconditions,postconditions,tags,priority,severity,type,behavior,automation,status,is_flaky,layer,steps_type,steps_actions,steps_result,steps_data,suite,suite_without_cases,is_muted
-,Splash animation triggers game crash,Verify that playing the splash animation causes the game to crash as intended.,,,,5,5,other,Destructive,is-not-automated,actual,No,,classic,"1. ""Launch the game.""
-2. ""Observe the splash animation start.""
-3. ""Wait for the animation to complete.""","1. ""Game process starts.""
-2. ""Splash animation appears on screen.""
-3. ""Game process terminates unexpectedly (crash) after animation ends.""",,,1,No
-,Disable splash animation prevents crash,Verify that disabling the splash animation prevents the crash.,,,,4,4,other,Negative,is-not-automated,actual,No,,classic,"1. ""Launch the game with splash animation disabled via configuration.""
-2. ""Observe game startup.""","1. ""Game starts without showing splash animation.""
-2. ""Game runs normally without crashing.""",,,1,No
-,Partial splash animation does not crash before completion,Verify that interrupting the splash animation before it finishes does not cause a crash.,,,,3,3,other,Positive,is-not-automated,actual,No,,classic,"1. ""Launch the game.""
-2. ""When splash animation starts, press Escape to skip it.""
-3. ""Observe the game state after skipping.""","1. ""Game starts and splash animation begins.""
-2. ""Splash animation is skipped.""
-3. ""Game continues to main menu without crashing.""",,,1,No
+v2.id,title,description,preconditions,postconditions,tags,priority,severity,type,behavior,automation,status,is_flaky,layer,steps_type,steps_actions,steps_result,steps_data,suite,suite_id,suite_without_cases,is_muted
+,Select character and verify basic attack reduces opponent health,"Player can select a character and successfully start a match, and basic attacks reduce opponent health.",Game installed and no previous session active.,Match ends or is paused.,"character-select,combat,health",Medium,Normal,functional,Positive,is-not-automated,actual,No,E2E,classic,"1. ""Launch the fighting game.""
+2. ""Navigate to the character selection screen.""
+3. ""Select the character named Ryu and confirm selection.""
+4. ""Start a match against the CPU opponent.""
+5. ""Press the basic punch button.""
+6. ""Observe the opponents health bar.""","1. ""Game launches to main menu.""
+2. ""Character selection screen is displayed.""
+3. ""Selected character Ryu is highlighted.""
+4. ""Match starts against CPU opponent.""
+5. ""CPU opponent receives damage and health bar decreases.""
+6. ""Health reduction matches expected damage value.""",,Fighting Game,1,,No
+,Attempt to select a locked character,Attempt to select a locked character should display a lock notification and prevent selection.,"Game launched, player has not unlocked 'Akuma'.",,"character-select,locked",Medium,Normal,functional,Negative,is-not-automated,actual,No,E2E,classic,"1. ""Launch the fighting game.""
+2. ""Navigate to the character selection screen.""
+3. ""Locate the locked character Akuma.""
+4. ""Attempt to select Akuma.""","1. ""Character selection screen is displayed.""
+2. ""Locked character Akuma shows a lock icon.""
+3. ""Attempting to select Akuma displays a Character locked message.""
+4. ""Selection does not change to Akuma.""",,Fighting Game,1,,No
+,Validate damage calculation logic,Unit test for damage calculation function ensures correct damage output for given inputs.,Unit test framework initialized.,,"unit,damage-calculation",Medium,Normal,unit,Positive,is-not-automated,actual,No,Unit,classic,"1. ""Call damageCalculator(light_punch, standing).""
+2. ""Call damageCalculator(heavy_kick, crouching).""","1. ""Damage calculation returns 15 for a light punch against a standing opponent.""
+2. ""Damage calculation returns 30 for a heavy kick against a crouching opponent.""",,Fighting Game,1,,No
+,Stress test rapid combo input for stability,Rapid input of combo commands should not cause the game to crash or become unresponsive.,Game running in a match.,Return to main menu.,"stress,performance,stability",Medium,Normal,performance,Destructive,is-not-automated,actual,No,E2E,classic,"1. ""Start a match against CPU.""
+2. ""Rapidly press the combo button sequence (up, down, left, right, A, B, C) 50 times.""
+3. ""Observe game behavior during and after the sequence.""","1. ""Game registers each input without freezing.""
+2. ""No crash dialog appears.""
+3. ""Game continues to run after the input sequence.""",,Fighting Game,1,,No
+,Verify leaderboard API returns correct data,API endpoint for retrieving the leaderboard returns a successful response with correct data format.,Game server is running and reachable.,,"api,leaderboard,smoke",Medium,Normal,smoke,Positive,is-not-automated,actual,No,API,classic,"1. ""Send a GET request to /api/leaderboard.""
+2. ""Validate the HTTP response code.""
+3. ""Parse the response body and verify required fields.""","1. ""HTTP status code 200 is returned.""
+2. ""Response body contains a JSON array of player entries with fields: playerId, rank, score.""
+3. ""Expected result is verified.""",,Fighting Game,1,,No
