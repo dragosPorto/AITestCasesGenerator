@@ -1,0 +1,31 @@
+v2.id,title,description,preconditions,postconditions,tags,priority,severity,type,behavior,automation,status,is_flaky,layer,steps_type,steps_actions,steps_result,steps_data,suite,suite_without_cases,is_muted
+,Open image modal on thumbnail click,Verify that clicking a visible image thumbnail opens the full-size image in a modal dialog.,,,,2,2,other,Positive,is-not-automated,actual,No,unknown,classic,"1. ""Navigate to the page containing the image thumbnail.""
+
+2. ""Verify the thumbnail is visible.""
+
+3. ""Click on the image thumbnail.""","1. ""A modal dialog appears centered on the screen.""
+
+2. ""The modal displays the full-size version of the clicked image.""
+
+3. ""A close button (X) is present and functional.""",,,1,No
+,Open correct image from gallery thumbnail,Verify that clicking a specific thumbnail in a gallery opens the corresponding full-size image.,,,,3,2,other,Positive,is-not-automated,actual,No,unknown,classic,"1. ""Open the image gallery page.""
+
+2. ""Identify the second image thumbnail in the gallery.""
+
+3. ""Click on the second thumbnail.""","1. ""A modal dialog appears displaying the full-size version of the selected image.""
+
+2. ""The displayed image matches the thumbnail that was clicked.""",,,1,No
+,Clicking disabled image does not open modal,Verify that clicking a disabled or placeholder image does not open a modal.,,,,3,3,other,Negative,is-not-automated,actual,No,unknown,classic,"1. ""Navigate to a page where an image placeholder is displayed (e.g., image failed to load).""
+
+2. ""Confirm the placeholder has a disabled visual state.""
+
+3. ""Click on the placeholder image.""","1. ""No modal dialog appears.""
+
+2. ""The UI remains unchanged and no error message is shown.""",,,1,No
+,Handle image click with network offline,"Verify the application handles a click on an image when the network is unavailable, without crashing.",,,,1,4,other,Destructive,is-not-automated,actual,No,unknown,classic,"1. ""Turn off network connectivity (e.g., enable airplane mode).""
+
+2. ""Navigate to the page with the image thumbnail.""
+
+3. ""Click on the image thumbnail.""","1. ""An error message or fallback UI is displayed indicating the image could not be loaded.""
+
+2. ""The application remains responsive; no crash or unhandled exception occurs.""",,,1,No
