@@ -1,37 +1,14 @@
 v2.id,title,description,preconditions,postconditions,tags,priority,severity,type,behavior,automation,status,is_flaky,layer,steps_type,steps_actions,steps_result,steps_data,suite,suite_without_cases,is_muted
-,Apply one-time 10% percentage coupon,Verify that a one-time 10% percentage coupon reduces a $100 USD invoice to $90.,,,,2,2,other,Positive,is-not-automated,actual,No,unknown,classic,"1. ""Create an invoice of $100 USD.""
-2. ""Apply a one-time 10% percentage coupon.""
-3. ""Calculate the invoice total.""","1. ""Invoice created with amount $100 USD.""
-2. ""Coupon applied successfully.""
-3. ""Invoice total is $90 USD.""",,,1,No
-,Apply $20 fixed-amount coupon recurring for 3 billing cycles,"Validate that a $20 USD fixed-amount coupon recurring for three cycles reduces each of the first three $50 USD invoices to $30, and subsequent invoices remain $50.",,,,2,2,other,Positive,is-not-automated,actual,No,unknown,classic,"1. ""Create a recurring invoice of $50 USD per billing cycle.""
-2. ""Apply a $20 USD fixed-amount coupon set to recur for 3 cycles.""
-3. ""Process the first billing cycle and calculate total.""
-4. ""Process the second billing cycle and calculate total.""
-5. ""Process the third billing cycle and calculate total.""
-6. ""Process the fourth billing cycle and calculate total.""","1. ""Recurring invoice template created with $50 USD per cycle.""
-2. ""Coupon applied and scheduled for 3 cycles.""
-3. ""First cycle total is $30 USD.""
-4. ""Second cycle total is $30 USD.""
-5. ""Third cycle total is $30 USD.""
-6. ""Fourth cycle total is $50 USD (coupon no longer applied).""",,,1,No
-,Fixed-amount coupon cannot reduce total below zero,Ensure that applying a $200 USD fixed-amount coupon to a $150 USD invoice caps the total at $0 and does not produce a negative amount.,,,,3,3,other,Negative,is-not-automated,actual,No,unknown,classic,"1. ""Create an invoice of $150 USD.""
-2. ""Apply a $200 USD fixed-amount coupon.""
-3. ""Calculate the invoice total.""","1. ""Invoice created with amount $150 USD.""
-2. ""Coupon applied; discount limited to invoice amount.""
-3. ""Invoice total is $0 USD (not negative).""",,,1,No
-,Forever fixed-amount coupon with currency specificity,Check that a forever $10 EUR fixed-amount coupon correctly reduces a €100 EUR invoice each time it is applied.,,,,2,2,other,Positive,is-not-automated,actual,No,unknown,classic,"1. ""Create an invoice of €100 EUR.""
-2. ""Apply a forever €10 EUR fixed-amount coupon.""
-3. ""Calculate the invoice total.""","1. ""Invoice created with amount €100 EUR.""
-2. ""Coupon applied permanently.""
-3. ""Invoice total is €90 EUR.""",,,1,No
-,Reject percentage coupon greater than 100%,"Verify that the system rejects a percentage coupon with a value exceeding 100%, preventing invalid discounts.",,,,3,4,other,Destructive,is-not-automated,actual,No,unknown,classic,"1. ""Create an invoice of $100 USD.""
-2. ""Attempt to apply a 150% percentage coupon.""
-3. ""Observe system response.""","1. ""Invoice created with amount $100 USD.""
-2. ""System rejects the coupon and returns an error indicating invalid discount percentage.""
-3. ""Invoice total remains $100 USD.""",,,1,No
-,Apply zero-value fixed-amount coupon,Confirm that a $0 fixed-amount coupon has no effect on the invoice total.,,,,1,1,other,Positive,is-not-automated,actual,No,unknown,classic,"1. ""Create an invoice of $80 USD.""
-2. ""Apply a $0 USD fixed-amount coupon.""
-3. ""Calculate the invoice total.""","1. ""Invoice created with amount $80 USD.""
-2. ""Coupon applied with zero discount.""
-3. ""Invoice total remains $80 USD.""",,,1,No
+,Splash animation triggers game crash,Verify that playing the splash animation causes the game to crash as intended.,,,,5,5,other,Destructive,is-not-automated,actual,No,,classic,"1. ""Launch the game.""
+2. ""Observe the splash animation start.""
+3. ""Wait for the animation to complete.""","1. ""Game process starts.""
+2. ""Splash animation appears on screen.""
+3. ""Game process terminates unexpectedly (crash) after animation ends.""",,,1,No
+,Disable splash animation prevents crash,Verify that disabling the splash animation prevents the crash.,,,,4,4,other,Negative,is-not-automated,actual,No,,classic,"1. ""Launch the game with splash animation disabled via configuration.""
+2. ""Observe game startup.""","1. ""Game starts without showing splash animation.""
+2. ""Game runs normally without crashing.""",,,1,No
+,Partial splash animation does not crash before completion,Verify that interrupting the splash animation before it finishes does not cause a crash.,,,,3,3,other,Positive,is-not-automated,actual,No,,classic,"1. ""Launch the game.""
+2. ""When splash animation starts, press Escape to skip it.""
+3. ""Observe the game state after skipping.""","1. ""Game starts and splash animation begins.""
+2. ""Splash animation is skipped.""
+3. ""Game continues to main menu without crashing.""",,,1,No

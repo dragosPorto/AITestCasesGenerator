@@ -8,6 +8,11 @@ from export_to_excel import export_to_excel
 from qase_integration import add_bulk_to_qase
 
 st.title("AI Test Case Generator")
+test_management_tool = st.selectbox(
+    "Select test management tool",
+    ["Qase", "TestRail"]
+)
+st.caption(f"Selected: {test_management_tool}")
 user_story = st.text_area("Enter the user story or functionality description:")
 if st.button("Generate Test Cases"):
     if user_story.strip():
