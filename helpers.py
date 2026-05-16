@@ -1,4 +1,5 @@
 import re
+from langchain_groq import ChatGroq
 
 def format_numbered_steps(value):
     import re
@@ -39,3 +40,9 @@ def align_steps(actions, results):
         actions.append("Verify the expected result.")
 
     return actions, results
+
+def create_llm(model_name):
+    return ChatGroq(
+        model=model_name,
+        temperature=0.2
+    )

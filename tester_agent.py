@@ -7,6 +7,12 @@ from groq import BadRequestError, RateLimitError, AuthenticationError, APIConnec
 
 load_dotenv()
 
+GROQ_MODELS = [
+    "llama-3.3-70b-versatile",   # primary
+    "qwen/qwen3-32b",            # backup 1
+    "llama-3.1-8b-instant",      # backup 2
+]
+
 class TestCaseGenerationError(Exception):
     pass
 
@@ -43,6 +49,7 @@ class OutputSchema(BaseModel):
 class State(TypedDict):
     user_story: str
     test_cases: List[TestCase]
+    model_used: str
 
 
 llm = ChatGroq(
@@ -52,8 +59,6 @@ llm = ChatGroq(
 
 
 def test_cases_generator(state: State):
-    structured_llm = llm.with_structured_output(OutputSchema)
-
     prompt = f"""
 You are a test case generator.
 
@@ -166,51 +171,101 @@ Rules:
   and business-focused.
 """
 
-    try:
-        result = structured_llm.invoke(prompt)
+    last_error = None
 
-        if not result.test_cases:
-            raise TestCaseGenerationError(
-                "The AI did not generate any test cases. Try adding more details to the user story."
+    for model_name in GROQ_MODELS:
+        try:
+            print(f"Trying model: {model_name}")
+
+            llm = ChatGroq(
+                model=model_name,
+                temperature=0
             )
 
-        return {
-        "test_cases": result.test_cases
-    }
+            structured_llm = llm.with_structured_output(
+                OutputSchema
+            )
 
-    except BadRequestError as e:
-        error_text = str(e)
+            result = structured_llm.invoke(prompt)
 
-        if "Failed to parse tool call arguments as JSON" in error_text:
+            if not result.test_cases:
+                raise TestCaseGenerationError(
+                    "The AI did not generate any test cases. "
+                    "Try adding more details to the user story."
+                )
+
+            print(f"Success with model: {model_name}")
+
+            return {
+                "test_cases": result.test_cases,
+                "model_used": model_name
+            }
+
+        except RateLimitError as e:
+            print(f"Quota reached for {model_name}")
+
+            last_error = e
+            continue
+
+        except BadRequestError as e:
+            error_text = str(e)
+
+            if (
+                "Failed to parse tool call arguments as JSON"
+                in error_text
+            ):
+                raise TestCaseGenerationError(
+                    "Too many test cases were generated and the AI response became too large. "
+                    "Try simplifying the user story."
+                )
+
             raise TestCaseGenerationError(
-                "Too many test cases were generated and the AI response became too large. "
-                "Try simplifying the user story."
-        )
+                f"AI generation failed: {error_text}"
+            )
 
-        raise TestCaseGenerationError(
-            f"AI generation failed: {error_text}"
-    )
+        except AuthenticationError:
+            raise TestCaseGenerationError(
+                "Authentication with Groq failed. "
+                "Please check your API key and try again."
+            )
 
-    except RateLimitError:
-        raise TestCaseGenerationError(
-            "Groq quota or rate limit reached for the selected model. "
-            "Please switch to another model or try again later."
-    )
-    except AuthenticationError:
-        raise TestCaseGenerationError(
-            "Authentication with Groq failed. Please check your API key and try again."
-    )
-    except APIConnectionError:
-        raise TestCaseGenerationError(
-            "Failed to connect to Groq API. Please check your network connection and try again."
-    )
-    except APITimeoutError:
-        raise TestCaseGenerationError(
-            "Request to Groq API timed out. Please try again later."
-    )
-    except Exception as e:
-        raise TestCaseGenerationError(
-            f"Unexpected error: {str(e)}"
+        except APIConnectionError:
+            raise TestCaseGenerationError(
+                "Failed to connect to Groq API. "
+                "Please check your network connection and try again."
+            )
+
+        except APITimeoutError:
+            raise TestCaseGenerationError(
+                "Request to Groq API timed out. "
+                "Please try again later."
+            )
+
+        except Exception as e:
+            print(f"Model failed: {model_name}")
+            print(f"Error: {str(e)}")
+            continue
+
+            # Catch hidden quota errors
+            if (
+                "rate limit" in error_text
+                or "quota" in error_text
+                or "429" in error_text
+                or "tokens per day" in error_text
+                or "tokens per minute" in error_text
+            ):
+                print(f"Fallback triggered for {model_name}")
+
+                last_error = e
+                continue
+
+            raise TestCaseGenerationError(
+                f"Unexpected error: {str(e)}"
+            )
+
+    raise TestCaseGenerationError(
+        "All available Groq models reached their quota/rate limit. "
+        "Please try again later."
     )
 
 
@@ -226,7 +281,11 @@ graph = graph_builder.compile()
 def generate_test_cases(user_input: str):
     result = graph.invoke({
         "user_story": user_input,
-        "test_cases": []
+        "test_cases": [],
+        "model_used": ""
     })
 
-    return result["test_cases"]
+    return {
+        "test_cases": result["test_cases"],
+        "model_used": result.get("model_used", "unknown")
+    }
