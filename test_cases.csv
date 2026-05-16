@@ -1,22 +1,4 @@
 v2.id,title,description,preconditions,postconditions,tags,priority,severity,type,behavior,automation,status,is_flaky,layer,steps_type,steps_actions,steps_result,steps_data,suite,suite_id,suite_without_cases,is_muted
-,Select valid image updates preview,Verify that selecting a valid image updates the preview and stores the selection.,User is on the page containing the image selector component.,,test-case-generator,Medium,Normal,functional,Positive,is-not-automated,actual,No,E2E,classic,"1. ""Open the page with the image selector.""
-2. ""Click the Select Image button to open the file picker.""
-3. ""Choose a valid image file (e.g., sample.png) and confirm.""
-4. ""Observe the UI after selection.""","1. ""File picker opens and displays image files.""
-2. ""User selects a valid image (e.g., PNG).""
-3. ""Selected image thumbnail appears in the preview area.""
-4. ""Image file path/value is stored in the component state.""",,Image Selector Suite,1,,No
-,Selecting non‑image file shows error,Ensure that selecting a non‑image file triggers an appropriate error message.,User is on the page containing the image selector component.,,test-case-generator,Medium,Normal,functional,Negative,is-not-automated,actual,No,E2E,classic,"1. ""Open the page with the image selector.""
-2. ""Click the Select Image button to open the file picker.""
-3. ""Choose a non‑image file (e.g., notes.txt) and confirm.""
-4. ""Observe the UI after selection.""","1. ""File picker opens and displays all files.""
-2. ""User selects a non‑image file (e.g., document.txt).""
-3. ""Error message Invalid file type. Please select an image. is displayed.""
-4. ""No image preview is shown and component state remains unchanged.""",,Image Selector Suite,1,,No
-,Corrupted image file handled gracefully,Validate that selecting a corrupted image file does not crash the application and shows a fallback error.,User is on the page containing the image selector component.,,test-case-generator,Medium,Normal,functional,Destructive,is-not-automated,actual,No,E2E,classic,"1. ""Open the page with the image selector.""
-2. ""Click the Select Image button to open the file picker.""
-3. ""Choose a corrupted image file (e.g., corrupted.jpg) and confirm.""
-4. ""Observe the UI and application stability after selection.""","1. ""File picker opens and displays image files.""
-2. ""User selects a corrupted image file.""
-3. ""Error message Unable to load image. Please choose another file. is displayed.""
-4. ""Application remains responsive and no crash occurs.""",,Image Selector Suite,1,,No
+,Test sugi pula with valid input,Test sugi pula with valid input,,,test-case-generator,Medium,Normal,functional,Positive,is-not-automated,actual,No,E2E,classic,"1. ""Enter valid sugi pula input""","1. ""sugi pula is processed correctly""",,Default Suite,0,,No
+,Test sugi pula with invalid input,Test sugi pula with invalid input,,,test-case-generator,Medium,Normal,functional,Negative,is-not-automated,actual,No,E2E,classic,"1. ""Enter invalid sugi pula input""","1. ""Error message is displayed""",,Default Suite,0,,No
+,Test sugi pula with extreme input,Test sugi pula with extreme input,,,test-case-generator,Medium,Normal,functional,Destructive,is-not-automated,actual,No,E2E,classic,"1. ""Enter extreme sugi pula input""","1. ""System handles extreme input without crashing""",,Default Suite,0,,No
