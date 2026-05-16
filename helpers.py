@@ -31,6 +31,9 @@ def format_numbered_steps(value):
     )
 
 def align_steps(actions, results):
+    actions = list(actions or [])
+    results = list(results or [])
+
     max_len = max(len(actions), len(results))
 
     while len(results) < max_len:

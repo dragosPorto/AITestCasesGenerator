@@ -254,6 +254,8 @@ Rules:
             continue
 
             # Catch hidden quota errors
+        except Exception as e:
+            error_text = str(e).lower()
             if (
                 "rate limit" in error_text
                 or "quota" in error_text
