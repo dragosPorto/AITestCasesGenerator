@@ -18,7 +18,7 @@ class TestCaseGenerationError(Exception):
 
 class TestCase(BaseModel):
     test_case_id: str = ""
-    test_title: str
+    test_title: str = ""
     description: str
     preconditions: str = ""
     postconditions: str = ""
@@ -73,6 +73,9 @@ Rules:
 - Return test cases using the required schema.
 - Do not generate test_case_id. Leave it empty.
 - Keep descriptions concise and clear.
+- test_title is required for every test case.
+- test_title must be a short, clear title.
+- Do not leave test_title empty.
 
 # ==========================================
 # ENUM / ALLOWED VALUES
@@ -194,6 +197,10 @@ Rules:
                     "Try adding more details to the user story."
                 )
 
+            for test_case in result.test_cases:
+                if not test_case.test_title:
+                    test_case.test_title = test_case.description or "Generated test case"
+                    
             print(f"Success with model: {model_name}")
 
             return {

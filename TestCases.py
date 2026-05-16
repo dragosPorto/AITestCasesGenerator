@@ -19,10 +19,15 @@ is_testrail = test_management_tool == "TestRail"
 if is_testrail:
     st.error("⚠️ TestRail import is not implemented yet.")
 
-import_directly_to_qase = st.checkbox(
-    "Import directly to Qase",
-    value=False
-)
+import_directly_to_qase = st.checkbox("Import directly to Qase")
+
+qase_project_code = ""
+
+if import_directly_to_qase:
+    qase_project_code = st.text_input(
+        "Qase Project Code",
+        placeholder="Example: AT"
+    )
 
 user_story = st.text_area("Enter the user story or functionality description:")
 
@@ -50,7 +55,8 @@ if st.button(
 
                 if import_directly_to_qase:
                     qase_result = add_csv_to_qase(
-                        "test_cases.csv"
+                        "test_cases.csv",
+                        qase_project_code
                     )
 
                     st.success(

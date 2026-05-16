@@ -393,7 +393,21 @@ def _build_case_from_row(
     return test_case
 
 
-def add_csv_to_qase(csv_path: str = "test_cases.csv") -> Dict[str, Any]:
+def add_csv_to_qase(
+    csv_path: str = "test_cases.csv",
+    project_code: str = "AT"
+) -> Dict[str, Any]:
+
+    project_code = project_code.strip().upper()
+
+    if not project_code:
+        raise QaseImportError("Qase project code is required.")
+
+    qase_bulk_url = (
+        f"https://api.qase.io/v1/case/"
+        f"{project_code}/bulk"
+    )
+
     df = pd.read_csv(csv_path).fillna("")
 
     suite_cache = _get_existing_suites()
@@ -401,18 +415,40 @@ def add_csv_to_qase(csv_path: str = "test_cases.csv") -> Dict[str, Any]:
     test_case_payload = []
 
     for _, row in df.iterrows():
-        test_case = _build_case_from_row(row, suite_cache, system_field_map)
+        test_case = _build_case_from_row(
+            row,
+            suite_cache,
+            system_field_map
+        )
+
         if test_case is not None:
             test_case_payload.append(test_case)
 
     if not test_case_payload:
         raise QaseImportError("No valid test cases found in CSV.")
 
-    payload = {"cases": test_case_payload}
-    response_body = _request_json("POST", QASE_BULK_URL, json=payload)
+    payload = {
+        "cases": test_case_payload
+    }
+    try:
+        response_body = _request_json(
+            "POST",
+            qase_bulk_url,
+            json=payload
+        )
+    except Exception as e:
+        error_text = str(e)
+        
+        if "Project not found" in error_text:
+            raise QaseImportError(
+                f"Qase project '{project_code}' not found. "
+                "Please check the project code and try again."
+            )
+        raise QaseImportError(f"Failed to import test cases to Qase: {error_text}") from e
 
     return {
         "success": True,
         "imported_count": len(test_case_payload),
+        "project_code": project_code,
         "qase_response": response_body,
     }
