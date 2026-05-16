@@ -72,6 +72,7 @@ Rules:
 - steps_type should always be "classic".
 - is_flaky should always be "No".
 - is_muted should always be "No".
+- tags should always be "test-case-generator".
 - severity must always be "Normal".
 - priority must always be "Medium".
 - suite_without_cases should be empty.
