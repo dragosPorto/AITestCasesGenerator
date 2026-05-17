@@ -7,14 +7,14 @@ from tester_agent import (
 from export_to_excel import export_to_excel
 from qase_integration import add_csv_to_qase, QaseImportError
 
-
+# Set up Streamlit page configuration and custom styles for the AI Test Case Generator app
 st.set_page_config(
     page_title="AI Test Case Generator",
     page_icon="🧪",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
+# Custom CSS styles for headers, info cards, and other UI elements to enhance the appearance of the app
 st.markdown(
     """
     <style>
@@ -88,6 +88,7 @@ with st.sidebar:
 
     st.subheader("Import options")
 
+    # When the user selects a test management tool, enable or disable the corresponding direct import options in the sidebar
     import_directly_to_qase = st.checkbox(
         "Import directly to Qase",
         disabled=is_testrail,
@@ -101,6 +102,7 @@ with st.sidebar:
 
     qase_project_code = ""
 
+    # If the user has enabled direct import to Qase, show a text input for the Qase project code which is needed for the API integration
     if import_directly_to_qase:
         qase_project_code = st.text_input(
             "Qase Project Code",
@@ -108,11 +110,15 @@ with st.sidebar:
             help="Use the project code from your Qase project URL. Example: app.qase.io/project/AT → AT"
         )
 
+    # If the user has enabled direct import to TestRail, 
+    # show an error message that this feature is not implemented yet since the integration with TestRail is planned for a future update
     if is_testrail:
         st.warning("TestRail direct import is not implemented yet. CSV export can be added later.")
 
     st.divider()
 
+    # In the sidebar, provide information about the output of the app,
+    # specifically that generated test cases will be saved locally as a CSV file which can be downloaded or imported into a test management tool
     st.subheader("Output")
     st.caption("Generated test cases are saved locally as `test_cases.csv`.")
 
@@ -136,6 +142,8 @@ with left_col:
         label_visibility="collapsed"
     )
 
+    # The button to trigger test case generation
+    # Button is disabled if the user has selected TestRail since direct import is not implemented yet
     generate_clicked = st.button(
         "🚀 Generate Test Cases",
         disabled=is_testrail,
@@ -146,6 +154,8 @@ with left_col:
 with right_col:
     st.markdown('<div class="section-title">📌 Current setup</div>', unsafe_allow_html=True)
 
+    # Display the current configuration settings in the right column of the main content area, including the selected test management tool,
+    # whether direct import is enabled, and the Qase project code if applicable
     st.markdown(
         f"""
         <div class="info-card">
@@ -157,6 +167,8 @@ with right_col:
         unsafe_allow_html=True
     )
 
+    # Provide additional information about what happens when the user clicks the generate button,
+    # explaining the steps of AI generation, CSV creation, and optional upload to Qase to set expectations for the user
     st.markdown(
         """
         <div class="info-card">
@@ -171,6 +183,8 @@ with right_col:
         unsafe_allow_html=True
     )
 
+    # Provide a tip to the user that more detailed user stories usually produce better test coverage,
+    # encouraging them to provide rich context for the AI to generate comprehensive test cases
     st.info("Tip: More detailed user stories usually produce better test coverage.")
 
 
@@ -181,6 +195,9 @@ with right_col:
 if generate_clicked:
     if user_story.strip():
         try:
+            # When the generate button is clicked,
+            # show a spinner while the AI is generating test cases from the provided user story
+            # to indicate that processing is happening
             with st.spinner("Generating test cases with AI..."):
                 generation_result = generate_test_cases(
                     user_story
@@ -196,6 +213,8 @@ if generate_clicked:
 
             export_to_excel(test_cases)
 
+            # If the user has enabled direct import to Qase,
+            # attempt to upload the generated CSV file to Qase using the API integration
             if test_management_tool == "Qase":
 
                 if import_directly_to_qase:
@@ -209,7 +228,6 @@ if generate_clicked:
                         f"🎉 Test cases generated, "
                         f"exported to CSV, and uploaded "
                         f"to Qase.\n\n"
-                        f"🤖 Model used: {model_used}"
                     )
 
                 else:
@@ -217,13 +235,16 @@ if generate_clicked:
                         f"🎉 Test cases generated and "
                         f"exported to CSV.\n\n"
                         f"Qase import was skipped.\n\n"
-                        f"🤖 Model used: {model_used}"
                     )
 
             st.divider()
 
             result_col_1, result_col_2, result_col_3 = st.columns(3)
 
+            # Display metrics about the generation result,
+            # including the number of test cases generated,
+            # the model used for generation,
+            # and confirmation that the CSV export is ready
             with result_col_1:
                 st.metric("Generated cases", len(test_cases))
 
@@ -233,6 +254,7 @@ if generate_clicked:
             with result_col_3:
                 st.metric("Export", "CSV ready")
 
+            # Provide a download button for the generated CSV file so the user can easily download it to their local machine
             try:
                 with open("test_cases.csv", "rb") as csv_file:
                     st.download_button(
@@ -242,9 +264,12 @@ if generate_clicked:
                         mime="text/csv",
                         use_container_width=True
                     )
+            # Handle the case where the CSV file was generated but cannot be found for download, showing a warning message to the user
             except FileNotFoundError:
                 st.warning("CSV file was generated but could not be found for download.")
 
+            # Provide an expander section to preview the generated test cases directly in the app,
+            # showing the title, description, and key attributes of each test case for quick review
             with st.expander("Preview generated test cases"):
                 for index, test_case in enumerate(test_cases, start=1):
                     st.markdown(f"### {index}. {test_case.test_title}")

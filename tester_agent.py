@@ -1,21 +1,25 @@
-from typing import TypedDict, List, Literal, Union
+from typing import TypedDict, List, Literal
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph
 from pydantic import BaseModel
 from groq import BadRequestError, RateLimitError, AuthenticationError, APIConnectionError, APITimeoutError
+from promptsUsedByAI import TEST_CASE_GENERATION_PROMPT
 
 load_dotenv()
 
+# Groq model names to try in order, with fallbacks in case of quota limits or errors
 GROQ_MODELS = [
-    "llama-3.3-70b-versatile",   # primary
-    "qwen/qwen3-32b",            # backup 1
-    "llama-3.1-8b-instant",      # backup 2
+    "openai/gpt-oss-120b",       # primary
+    "llama-3.3-70b-versatile",   # backup 1
+    "qwen/qwen3-32b",            # backup 2
+    "llama-3.1-8b-instant",      # backup 3
 ]
 
 class TestCaseGenerationError(Exception):
     pass
 
+# Testcase schema definition using Pydantic for structured output from the LLM
 class TestCase(BaseModel):
     test_case_id: str = ""
     test_title: str = ""
@@ -51,128 +55,10 @@ class State(TypedDict):
     test_cases: List[TestCase]
     model_used: str
 
-
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    temperature=0
-)
-
-
 def test_cases_generator(state: State):
-    prompt = f"""
-You are a test case generator.
-
-Generate test cases for this user story:
-
-{state["user_story"]}
-
-Rules:
-# ==========================================
-# GENERAL OUTPUT RULES
-# ==========================================
-- Return test cases using the required schema.
-- Do not generate test_case_id. Leave it empty.
-- Keep descriptions concise and clear.
-- test_title is required for every test case.
-- test_title must be a short, clear title.
-- Do not leave test_title empty.
-
-# ==========================================
-# ENUM / ALLOWED VALUES
-# ==========================================
-- behavior must be exactly one of:
-  - Positive
-  - Negative
-  - Destructive
-
-- layer must be exactly one of:
-  - E2E
-  - API
-  - Unit
-
-- type must be exactly one of:
-  - functional
-  - smoke
-  - performance
-  - security
-  - usability
-  - compatibility
-  - regression
-  - acceptance
-  - integration
-  - exploratory
-  - other
-
-# ==========================================
-# FIXED DEFAULT VALUES
-# ==========================================
-- automation must always be:
-  "is-not-automated"
-
-- status must always be:
-  "actual"
-
-- steps_type must always be:
-  "classic"
-
-- is_flaky must always be:
-  "No"
-
-- is_muted must always be:
-  "No"
-
-- tags must always be:
-  "test-case-generator"
-
-- severity must always be:
-  "Normal"
-
-- priority must always be:
-  "Medium"
-
-# ==========================================
-# SUITE RULES
-# ==========================================
-- suite represents the functionality or module
-  the test case belongs to.
-
-- suite must contain the test suite name.
-
-- If the functionality/module is unclear,
-  use:
-  "Default Suite"
-
-- suite_without_cases must always be empty.
-
-- suite_id must be:
-  - a unique integer for each suite
-  - 0 for "Default Suite"
-
-# ==========================================
-# TEST STEP RULES
-# ==========================================
-- test_steps must be a list of strings.
-- expected_result must be a list of strings.
-
-- test_steps and expected_result must
-  contain the same number of items.
-
-- Each test_steps item must have exactly
-  one matching expected_result item
-  at the same index.
-
-- Do not group multiple expected results
-  into a single item.
-
-# ==========================================
-# QUALITY RULES
-# ==========================================
-- Generate realistic QA test cases.
-- Include positive, negative, and destructive
-  scenarios when applicable.
-- Test cases should be implementation-agnostic
-  and business-focused.
-"""
+    prompt = TEST_CASE_GENERATION_PROMPT.format(
+    user_story=state["user_story"]
+)
 
     last_error = None
 
@@ -180,27 +66,38 @@ Rules:
         try:
             print(f"Trying model: {model_name}")
 
+            # ChatGroq configuration
+            # Adjust temperature and max_tokens as needed for your use case
+            # Temperature is set low to encourage more focused and deterministic output. Increase if you want more creative test cases.
             llm = ChatGroq(
                 model=model_name,
-                temperature=0
+                temperature=0.2,
+                max_tokens=4096,
+                timeout=60,
+                max_retries=1,
             )
 
+            # Use structured output to get a list of test cases with defined fields
             structured_llm = llm.with_structured_output(
                 OutputSchema
             )
 
+            # Invoke the model with the prompt and get structured test cases
             result = structured_llm.invoke(prompt)
 
+            # Validate that we got test cases back
             if not result.test_cases:
                 raise TestCaseGenerationError(
                     "The AI did not generate any test cases. "
                     "Try adding more details to the user story."
                 )
 
+            # Ensure each test case has a title, if not use description as fallback
             for test_case in result.test_cases:
                 if not test_case.test_title:
                     test_case.test_title = test_case.description or "Generated test case"
-                    
+            
+            # Print success message with the model that worked in console for debugging        
             print(f"Success with model: {model_name}")
 
             return {
@@ -208,6 +105,7 @@ Rules:
                 "model_used": model_name
             }
 
+        # Handle specific Groq exceptions to determine if we should fallback to the next model
         except RateLimitError as e:
             print(f"Quota reached for {model_name}")
 
@@ -277,16 +175,18 @@ Rules:
         "Please try again later."
     )
 
-
+# Build the state graph for test case generation using the defined state and generator function
 graph_builder = StateGraph(State)
 
+# Add the test case generator node to the graph and set it as the entry and finish point since it's a single-step process
 graph_builder.add_node("generator", test_cases_generator)
 graph_builder.set_entry_point("generator")
 graph_builder.set_finish_point("generator")
 
+# Compile the graph to create an executable workflow for generating test cases from a user story
 graph = graph_builder.compile()
 
-
+# Function to invoke the graph with a user story and get generated test cases and the model used
 def generate_test_cases(user_input: str):
     result = graph.invoke({
         "user_story": user_input,

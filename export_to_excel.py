@@ -1,5 +1,4 @@
 from helpers import align_steps, format_numbered_steps
-import csv
 
 
 def export_to_excel(test_cases):
