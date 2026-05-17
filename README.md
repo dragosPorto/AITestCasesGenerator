@@ -57,9 +57,38 @@ The tool can:
 
 ## Requirements
 
+Before using the tool, make sure you have:
+
 * Python 3.11+ recommended
-* Groq API key
-* (Optional) Qase API key for direct import
+* A Groq account
+* A Groq API key
+* (Optional) A Qase API key for direct import
+
+### Install Python
+
+Python is required to install dependencies and run the application.
+
+Download Python:
+
+https://www.python.org/downloads/
+
+During installation on Windows, make sure to check:
+
+```txt
+Add Python to PATH
+```
+
+Verify installation:
+
+```bash
+python --version
+```
+
+or:
+
+```bash
+python3 --version
+```
 
 ---
 
@@ -71,6 +100,8 @@ The tool can:
 git clone https://github.com/dragosPorto/AITestCasesGenerator.git
 cd AITestCasesGenerator
 ```
+
+---
 
 ### 2. Create virtual environment
 
@@ -104,7 +135,32 @@ pip install streamlit langchain langgraph langchain-groq python-dotenv pandas re
 
 ---
 
-### 4. Create `.env`
+### 4. Create a Groq Account & API Key
+
+This application uses **Groq-hosted LLMs** to generate AI test cases.
+
+Before running the app, you must:
+
+#### Step 1: Create a Groq account
+
+Sign up here:
+
+https://console.groq.com/
+
+#### Step 2: Generate an API Key
+
+1. Log into Groq Console
+2. Open **API Keys**
+3. Click **Create API Key**
+4. Copy the generated key
+
+You will add this key to the `.env` file in the next step.
+
+> Free Groq accounts include daily token limits depending on the selected model.
+
+---
+
+### 5. Create `.env`
 
 Create a file named:
 
@@ -119,6 +175,8 @@ GROQ_API_KEY=your_groq_api_key_here
 QASE_API_KEY=your_qase_api_key_here
 ```
 
+> `GROQ_API_KEY` is required for AI test case generation.
+>
 > `QASE_API_KEY` is only required if you want direct Qase import.
 
 ---
