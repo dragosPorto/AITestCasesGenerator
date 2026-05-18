@@ -81,6 +81,13 @@ with st.sidebar:
         ["Qase", "TestRail"],
         help="Choose where the generated test cases should be prepared for."
     )
+    
+    test_type = st.selectbox(
+        "Test type",
+        options=["Positive", "Negative", "Destructive"],
+        index=0,
+        help="Select the type of test cases to generate.You can choose positive, negative, or destructive"
+    )
 
     is_testrail = test_management_tool == "TestRail"
 
@@ -161,7 +168,8 @@ with right_col:
         <div class="info-card">
             <strong>Tool:</strong> {test_management_tool}<br>
             <strong>Direct import:</strong> {'Enabled' if import_directly_to_qase or import_directly_to_testrail else 'Disabled'}<br>
-            <strong>Qase project:</strong> {qase_project_code if qase_project_code else 'Not set'}
+            <strong>Qase project:</strong> {qase_project_code if qase_project_code else 'Not set'}<br>
+            <strong>Test type:</strong> {test_type}
         </div>
         """,
         unsafe_allow_html=True
@@ -200,7 +208,8 @@ if generate_clicked:
             # to indicate that processing is happening
             with st.spinner("Generating test cases with AI..."):
                 generation_result = generate_test_cases(
-                    user_story
+                    user_input=user_story,
+                    test_type=test_type.lower()
                 )
 
             test_cases = generation_result[

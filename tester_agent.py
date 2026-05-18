@@ -4,7 +4,7 @@ from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph
 from pydantic import BaseModel
 from groq import BadRequestError, RateLimitError, AuthenticationError, APIConnectionError, APITimeoutError
-from promptsUsedByAI import TEST_CASE_GENERATION_PROMPT
+from promptsUsedByAI import POSITIVE_TEST_PROMPT, NEGATIVE_TEST_PROMPT, DESTRUCTIVE_TEST_PROMPT
 
 load_dotenv()
 
@@ -18,6 +18,12 @@ GROQ_MODELS = [
 
 class TestCaseGenerationError(Exception):
     pass
+
+PROMPT_MAP = {
+    "positive": POSITIVE_TEST_PROMPT,
+    "negative": NEGATIVE_TEST_PROMPT,
+    "destructive": DESTRUCTIVE_TEST_PROMPT,
+}
 
 # Testcase schema definition using Pydantic for structured output from the LLM
 class TestCase(BaseModel):
@@ -52,13 +58,21 @@ class OutputSchema(BaseModel):
 
 class State(TypedDict):
     user_story: str
-    test_cases: List[TestCase]
+    test_type: str
+    test_cases: list
     model_used: str
 
 def test_cases_generator(state: State):
-    prompt = TEST_CASE_GENERATION_PROMPT.format(
-    user_story=state["user_story"]
-)
+    test_type = state.get("test_type", "positive")
+
+    selected_prompt = PROMPT_MAP.get(
+        test_type,
+    POSITIVE_TEST_PROMPT
+    )
+    
+    prompt = selected_prompt.format(
+        user_story=state["user_story"]
+    )
 
     last_error = None
 
@@ -187,14 +201,21 @@ graph_builder.set_finish_point("generator")
 graph = graph_builder.compile()
 
 # Function to invoke the graph with a user story and get generated test cases and the model used
-def generate_test_cases(user_input: str):
+def generate_test_cases(
+    user_input: str,
+    test_type: str = "positive"
+):
     result = graph.invoke({
         "user_story": user_input,
+        "test_type": test_type,
         "test_cases": [],
         "model_used": ""
     })
 
     return {
         "test_cases": result["test_cases"],
-        "model_used": result.get("model_used", "unknown")
+        "model_used": result.get(
+            "model_used",
+            "unknown"
+        )
     }
