@@ -88,6 +88,29 @@ with st.sidebar:
         index=0,
         help="Select the type of test cases to generate.You can choose positive, negative, or destructive"
     )
+    
+    st.subheader("AI Model")
+
+    GROQ_MODELS = {
+        "⭐ Best Quality (GPT OSS 120B)": "openai/gpt-oss-120b",
+        "⭐ Best Balance (Llama 3.3 70B)": "llama-3.3-70b-versatile",
+        "⚡ Fast + Structured (Qwen 32B)": "qwen/qwen3-32b",
+}
+
+    selected_agent_label = st.selectbox(
+        "Choose AI agent",
+        options=list(GROQ_MODELS.keys()),
+        index=0,  # Default = Best Quality (GPT OSS 120B)": "openai/gpt-oss-120b",
+        help="""
+    Choose the AI model for test case generation.
+
+    ⭐ GPT OSS 120B → Best quality, deepest test coverage
+    ⭐ Llama 3.3 70B → Best balance of quality + speed
+    ⚡ Qwen 32B → Fast + strong structured output
+    """
+)
+
+    selected_model = GROQ_MODELS[selected_agent_label]
 
     is_testrail = test_management_tool == "TestRail"
 
@@ -167,6 +190,7 @@ with right_col:
         f"""
         <div class="info-card">
             <strong>Tool:</strong> {test_management_tool}<br>
+            <strong>AI Model:</strong> {selected_agent_label}<br>
             <strong>Direct import:</strong> {'Enabled' if import_directly_to_qase or import_directly_to_testrail else 'Disabled'}<br>
             <strong>Qase project:</strong> {qase_project_code if qase_project_code else 'Not set'}<br>
             <strong>Test type:</strong> {test_type}
@@ -209,8 +233,9 @@ if generate_clicked:
             with st.spinner("Generating test cases with AI..."):
                 generation_result = generate_test_cases(
                     user_input=user_story,
-                    test_type=test_type.lower()
-                )
+                    test_type=test_type.lower(),
+                    model=selected_model
+            )
 
             test_cases = generation_result[
                 "test_cases"
@@ -258,7 +283,7 @@ if generate_clicked:
                 st.metric("Generated cases", len(test_cases))
 
             with result_col_2:
-                st.metric("Model used", model_used)
+                st.metric("Model used", selected_model)
 
             with result_col_3:
                 st.metric("Export", "CSV ready")
